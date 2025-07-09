@@ -17,9 +17,13 @@ datasource db {
 model Product {
   id          String   @id @default(uuid())
   name        String
+  description String
   category    String
   location    String
   status      String
+  pickedBy    String?
+  serialNumber String?
+  purchaseDate DateTime?
   value       Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -32,5 +36,9 @@ model CheckoutLog {
   productId  String
   status     String
   pickedBy   String?
+  action     String   @default("STATUS_CHANGE")
+  previousStatus String?
+  newStatus String?
+  updatedBy  String?  @default("system")
   timestamp  DateTime @default(now())
 }

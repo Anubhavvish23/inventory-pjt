@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Product, FilterOptions } from '@/types/inventory';
+import { Product, FilterOptions, ProductStatus } from '@/types/inventory';
 import { useInventory } from '@/hooks/use-inventory';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
@@ -11,13 +11,12 @@ import { ProductForm } from '@/components/inventory/product-form';
 import { StatusUpdateModal } from '@/components/inventory/status-update-modal';
 import { HistoryModal } from '@/components/inventory/history-modal';
 import { InventoryFilters } from '@/components/inventory/inventory-filters';
+import { trpc } from '@/lib/trpc-client';
 
 export default function InventoryPage() {
   const {
     products,
     loading,
-    getProductHistory,
-    updateProductStatus,
     createProduct,
     updateProduct,
     deleteProduct,
@@ -33,6 +32,12 @@ export default function InventoryPage() {
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  const historyQuery = trpc.checkout.history.useQuery(
+    { productId: selectedProductId || '' },
+    { enabled: !!selectedProductId }
+  );
+  const historyData = historyQuery.data || [];
 
   const filteredProducts = products.filter((product) => {
     let matches = true;
@@ -80,20 +85,58 @@ export default function InventoryPage() {
   };
 
   const handleSaveProduct = (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const cleanData = {
+      ...productData,
+      status: productData.status as ProductStatus,
+      value: productData.value ?? undefined,
+      pickedBy: productData.pickedBy ?? undefined,
+      serialNumber: productData.serialNumber ?? undefined,
+      purchaseDate: productData.purchaseDate
+        ? typeof productData.purchaseDate === 'string'
+          ? new Date(productData.purchaseDate)
+          : productData.purchaseDate
+        : undefined,
+    };
+
     if (selectedProduct) {
-      updateProduct.mutate({ id: selectedProduct.id, data: productData });
+      updateProduct.mutate({ 
+        id: selectedProduct.id, 
+        data: cleanData
+      });
     } else {
-      createProduct.mutate(productData);
+      createProduct.mutate(cleanData);
     }
     closeModals();
   };
 
-  const handleUpdateStatus = (status: any, pickedBy?: string) => {
+  const handleUpdateStatus = async (status: any, pickedBy?: string) => {
     if (selectedProduct) {
-      updateProduct.mutate({
-        id: selectedProduct.id,
-        data: { status, pickedBy }
-      });
+      try {
+        const statusString = typeof status === 'string' ? status : String(status);
+        const data: any = { status: statusString };
+
+        if (statusString === 'IN_EVENT') {
+          if (pickedBy && pickedBy.trim()) {
+            data.pickedBy = pickedBy.trim();
+          } else {
+            alert('Picked By is required when status is In-Event');
+            return;
+          }
+        }
+        // Do NOT include pickedBy for other statuses
+        console.log('Updating product:', { id: selectedProduct.id, data });
+        
+        await updateProduct.mutateAsync({
+          id: selectedProduct.id,
+          data
+        });
+        
+        console.log('Status update successful');
+      } catch (error) {
+        console.error('Error updating product status:', error);
+        alert(`Error updating status: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return;
+      }
     }
     closeModals();
   };
@@ -206,7 +249,7 @@ export default function InventoryPage() {
               productName={
                 products.find(p => p.id === selectedProductId)?.name || 'Unknown Product'
               }
-              history={getProductHistory(selectedProductId)}
+              history={historyData}
               onClose={closeModals}
             />
           )}

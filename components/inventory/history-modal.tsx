@@ -68,8 +68,8 @@ export function HistoryModal({ productName, history, onClose }: HistoryModalProp
         ) : (
           <div className="space-y-4">
             {history.map((log, index) => {
-              const previousStatusInfo = statusConfig[log.previousStatus];
-              const newStatusInfo = statusConfig[log.newStatus];
+              const previousStatusInfo = statusConfig[log.previousStatus || 'AVAILABLE'];
+              const newStatusInfo = statusConfig[log.newStatus || 'AVAILABLE'];
               const actionColor = getActionColor(log.action);
 
               return (
@@ -108,27 +108,11 @@ export function HistoryModal({ productName, history, onClose }: HistoryModalProp
                             </div>
                           )}
                           
-                          {log.location && (
-                            <div className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
-                              <span>{log.location}</span>
-                            </div>
-                          )}
-                          
                           <div className="flex items-center gap-1">
                             <User className="w-3 h-3" />
                             <span>By: {log.updatedBy}</span>
                           </div>
                         </div>
-
-                        {log.notes && (
-                          <div className="mt-2 p-2 bg-muted/50 rounded text-sm">
-                            <div className="flex items-start gap-1">
-                              <FileText className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                              <span>{log.notes}</span>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>

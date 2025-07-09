@@ -28,7 +28,7 @@ interface StatusUpdateModalProps {
 }
 
 export function StatusUpdateModal({ product, onUpdate, onCancel }: StatusUpdateModalProps) {
-  const [status, setStatus] = useState<ProductStatus>(product.status);
+  const [status, setStatus] = useState<ProductStatus>(product.status as ProductStatus);
   const [pickedBy, setPickedBy] = useState(product.pickedBy || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -44,11 +44,20 @@ export function StatusUpdateModal({ product, onUpdate, onCancel }: StatusUpdateM
 
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    onUpdate(status, pickedBy.trim() || undefined);
-    setIsSubmitting(false);
+    try {
+      console.log('Submitting status update:', { status, pickedBy });
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      onUpdate(status, pickedBy.trim() || undefined);
+      console.log('Status update submitted successfully');
+    } catch (error) {
+      console.error('Error in status update modal:', error);
+      setError(`Error updating status: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const currentStatusInfo = statusConfig[product.status];

@@ -75,5 +75,3 @@ npm run dev
 - For tRPC errors, ensure you are not using `next export` and are running in server mode.
 - Use `npx prisma studio` to inspect and edit your data visually.
 
-## License
-MIT 

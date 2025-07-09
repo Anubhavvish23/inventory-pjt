@@ -19,18 +19,49 @@ export const productRouter = router({
       data: productUpdateSchema,
     }))
     .mutation(async ({ input }) => {
-      // If status is IN_EVENT, pickedBy must be present
-      if (
-        input.data.status === 'IN_EVENT' &&
-        (!('pickedBy' in input.data) || !input.data.pickedBy)
-      ) {
-        throw new Error('pickedBy is required when status is IN_EVENT');
+      try {
+        // Debug log to see what is received
+        console.log('Received update payload:', JSON.stringify(input, null, 2));
+        
+        // If status is IN_EVENT, pickedBy must be present and not empty
+        if (
+          input.data.status === 'IN_EVENT' &&
+          (!input.data.pickedBy || input.data.pickedBy.trim() === '')
+        ) {
+          throw new Error('pickedBy is required when status is IN_EVENT');
+        }
+        
+        // Get the previous product state
+        const prevProduct = await prisma.product.findUnique({ where: { id: input.id } });
+        if (!prevProduct) throw new Error('Product not found');
+
+        // Update the product
+        const product = await prisma.product.update({
+          where: { id: input.id },
+          data: input.data,
+        });
+
+        // If status changed, log it
+        if (input.data.status && input.data.status !== prevProduct.status) {
+          await prisma.checkoutLog.create({
+            data: {
+              productId: input.id,
+              status: input.data.status,
+              pickedBy: input.data.pickedBy,
+              action: 'STATUS_CHANGE',
+              previousStatus: prevProduct.status,
+              newStatus: input.data.status,
+              updatedBy: 'system',
+            },
+          });
+        }
+        
+        console.log('Product updated successfully:', product);
+        return product;
+      } catch (error) {
+        console.error('Error updating product:', error);
+        throw error;
       }
-      const product = await prisma.product.update({
-        where: { id: input.id },
-        data: input.data,
-      });
-      return product;
     }),
 
   delete: publicProcedure

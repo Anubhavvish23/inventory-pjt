@@ -1,6 +1,6 @@
 import { ProductStatus } from '@/types/inventory';
 
-export const statusConfig = {
+export const statusConfig: Record<string, { color: string; icon: string; description: string }> = {
   [ProductStatus.AVAILABLE]: {
     color: 'bg-green-100 text-green-800 border-green-200',
     icon: '✓',

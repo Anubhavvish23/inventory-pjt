@@ -10,7 +10,7 @@ export default function TestTRPC() {
     updateProduct,
     deleteProduct,
     logCheckout,
-    getHistory,
+    getProductHistory,
   } = useInventory();
   const [newName, setNewName] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -33,8 +33,9 @@ export default function TestTRPC() {
           onClick={() => {
             createProduct.mutate({
               name: newName,
-              category: 'Test',
-              location: 'TestLoc',
+              description: 'Test product description',
+              category: 'Test Category',
+              location: 'Test Location',
               status: 'AVAILABLE',
             });
             setNewName('');
@@ -74,7 +75,7 @@ export default function TestTRPC() {
         <div className="border p-4 mt-4">
           <h2 className="font-bold mb-2">Checkout History</h2>
           <button className="mb-2 text-sm underline" onClick={() => setSelectedId(null)}>Close</button>
-          <History productId={selectedId} getHistory={getHistory} />
+          <History productId={selectedId} getProductHistory={getProductHistory} />
           <div className="mt-2">
             <input
               className="border p-1 mr-2"
@@ -98,8 +99,8 @@ export default function TestTRPC() {
   );
 }
 
-function History({ productId, getHistory }: { productId: string, getHistory: any }) {
-  const { data, isLoading } = getHistory({ productId });
+function History({ productId, getProductHistory }: { productId: string, getProductHistory: any }) {
+  const { data, isLoading } = getProductHistory({ productId });
   if (isLoading) return <div>Loading history...</div>;
   if (!data?.length) return <div>No history.</div>;
   return (

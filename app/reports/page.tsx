@@ -51,7 +51,7 @@ import { statusConfig, formatCurrency, formatDate } from '@/lib/inventory-utils'
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
 export default function ReportsPage() {
-  const { products, checkoutLogs } = useInventory();
+  const { products } = useInventory();
   const [reportType, setReportType] = useState('overview');
   const [dateRange, setDateRange] = useState('30');
   const [showRaw, setShowRaw] = useState(false);

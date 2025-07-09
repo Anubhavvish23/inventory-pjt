@@ -4,13 +4,13 @@ export interface Product {
   description: string;
   category: string;
   location: string;
-  status: ProductStatus;
-  pickedBy?: string;
-  serialNumber?: string;
-  purchaseDate?: Date;
-  value?: number;
-  createdAt: Date;
-  updatedAt: Date;
+  status: ProductStatus | string;
+  pickedBy?: string | null;
+  serialNumber?: string | null;
+  purchaseDate?: Date | string | null;
+  value?: number | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export enum ProductStatus {
@@ -25,14 +25,13 @@ export enum ProductStatus {
 export interface CheckoutLog {
   id: string;
   productId: string;
-  action: 'CHECKOUT' | 'RETURN' | 'STATUS_CHANGE';
-  previousStatus: ProductStatus;
-  newStatus: ProductStatus;
-  pickedBy?: string;
-  location?: string;
-  notes?: string;
-  timestamp: Date;
-  updatedBy: string;
+  action: string;
+  previousStatus: ProductStatus | string | null;
+  newStatus: ProductStatus | string | null;
+  pickedBy?: string | null;
+  timestamp: Date | string;
+  updatedBy: string | null;
+  status: string;
 }
 
 export interface FilterOptions {

@@ -5,7 +5,15 @@ import { z } from 'zod';
 
 export const checkoutRouter = router({
   log: publicProcedure
-    .input(checkoutLogSchema)
+    .input(z.object({
+      productId: z.string().uuid(),
+      status: z.enum(['AVAILABLE', 'IN_EVENT', 'DEFECTIVE', 'IN_REPAIR', 'MISSING', 'RETIRED']),
+      pickedBy: z.string().optional(),
+      action: z.string().optional().default('STATUS_CHANGE'),
+      previousStatus: z.string().optional(),
+      newStatus: z.string().optional(),
+      updatedBy: z.string().optional().default('system'),
+    }))
     .mutation(async ({ input }) => {
       if (input.status === 'IN_EVENT' && !input.pickedBy) {
         throw new Error('pickedBy is required when status is IN_EVENT');
