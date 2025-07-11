@@ -30,7 +30,11 @@ export const checkoutRouter = router({
       const logs = await prisma.checkoutLog.findMany({
         where: { productId: input.productId },
         orderBy: { timestamp: 'desc' },
+        include: { product: { select: { name: true } } },
       });
-      return logs;
+      return logs.map(log => ({
+        ...log,
+        productName: log.product?.name || '',
+      }));
     }),
 }); 

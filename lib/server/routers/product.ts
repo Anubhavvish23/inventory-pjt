@@ -67,8 +67,20 @@ export const productRouter = router({
   delete: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input }) => {
-      await prisma.product.delete({ where: { id: input.id } });
-      return { success: true };
+      try {
+        // First, delete all associated checkout logs
+        await prisma.checkoutLog.deleteMany({
+          where: { productId: input.id },
+        });
+        
+        // Then delete the product
+        await prisma.product.delete({ where: { id: input.id } });
+        
+        return { success: true, message: 'Product and associated logs deleted successfully' };
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        throw new Error(`Failed to delete product: ${error.message}`);
+      }
     }),
 
   getAll: publicProcedure
